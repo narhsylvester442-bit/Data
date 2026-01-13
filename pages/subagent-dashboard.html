@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sub-Agent Dashboard | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="../assets/css/style.css">
+
+<style>
+body {
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  margin:0;
+}
+
+header {
+  background:#020617;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.card {
+  background:#020617;
+  margin:15px;
+  padding:15px;
+  border-radius:8px;
+}
+
+button {
+  background:#22c55e;
+  border:none;
+  padding:10px 15px;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:5px;
+  border:none;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+}
+
+.success { color:#22c55e; }
+.error { color:#ef4444; }
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:6px;
+  z-index:10000;
+}
+.toast.error{background:#ef4444}
+</style>
+</head>
+
+
+<body>
+
+    <div id="globalLoader" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  color:#fff;
+">
+  Loading...
+</div>
+
+<header>
+  <h3>Sub-Agent Dashboard</h3>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<!-- WALLET -->
+<div class="card">
+  <h4>Wallet Balance</h4>
+  <h2 id="wallet">GHS 0.00</h2>
+</div>
+
+<!-- COMMISSION -->
+<div class="card">
+  <h4>Total Commission Earned</h4>
+  <h2 id="commission">GHS 0.00</h2>
+</div>
+
+<!-- REFERRAL -->
+<div class="card">
+  <h4>Your Referral Link</h4>
+  <input readonly id="refLink">
+</div>
+
+<!-- WITHDRAW -->
+<div class="card">
+  <h4>Request Withdrawal</h4>
+  <input id="amount" placeholder="Amount (GHS)">
+  <input id="momo" placeholder="MTN MoMo Number">
+  <button onclick="withdraw()">Withdraw</button>
+  <p id="withdrawMsg"></p>
+</div>
+
+<!-- TRANSACTIONS -->
+<div class="card">
+  <h4>Recent Transactions</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Network</th>
+        <th>Volume</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="txTable"></tbody>
+  </table>
+</div>
+
+<script>
+/* Load wallet */
+fetch("../../backend/wallet.php")
+.then(res => res.json())
+.then(d => {
+  document.getElementById("wallet").innerText = "GHS " + d.wallet;
+});
+
+/* Load commission */
+fetch("../../backend/commission.php")
+.then(res => res.json())
+.then(d => {
+  document.getElementById("commission").innerText = "GHS " + d.total;
+});
+
+/* Referral link */
+fetch("../../backend/referral.php")
+.then(r=>r.text())
+.then(link => document.getElementById("refLink").value = link);
+
+/* Transactions */
+fetch("../../backend/transactions.php")
+.then(r=>r.json())
+.then(rows=>{
+  let html="";
+  rows.forEach(t=>{
+    html+=`<tr>
+      <td>${t.network}</td>
+      <td>${t.volume}GB</td>
+      <td class="${t.status=='success'?'success':'error'}">${t.status}</td>
+      <td>${t.created_at}</td>
+    </tr>`;
+  });
+  document.getElementById("txTable").innerHTML=html;
+});
+
+/* Withdraw */
+function withdraw(){
+  fetch("../../backend/withdraw.php",{
+    method:"POST",
+    body:new URLSearchParams({
+      amount:amount.value,
+      momo:momo.value
+    })
+  })
+  .then(r=>r.text())
+  .then(msg=>{
+    withdrawMsg.innerText=msg;
+    withdrawMsg.className = msg.includes("submitted") ? "success" : "error";
+  });
+}
+
+/* Logout */
+function logout(){
+  fetch("../../backend/logout.php").then(()=>location.href="../login.html");
+}
+ 
+</script>
+<script src="../assets/js/main.js"></script>
+
+</body>
+</html>

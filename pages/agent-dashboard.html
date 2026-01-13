@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Dashboard | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--<link rel="stylesheet" href="../assets/css/style.css">-->
+
+<style>
+body{
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  margin:0;
+}
+header{
+  background:#020617;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card{
+  background:#020617;
+  margin:15px;
+  padding:15px;
+  border-radius:8px;
+}
+h2,h3,h4{margin:5px 0}
+button{
+  background:#22c55e;
+  border:none;
+  padding:10px 15px;
+  border-radius:5px;
+  cursor:pointer;
+}
+button.danger{
+  background:#ef4444;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:5px;
+  border:none;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+}
+.success{color:#22c55e}
+.error{color:#ef4444}
+.flex{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.flex .card{
+  flex:1;
+  min-width:220px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h3>Agent Dashboard</h3>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<!-- TOP STATS -->
+<div class="flex">
+  <div class="card">
+    <h4>Wallet Balance</h4>
+    <h2 id="wallet">GHS 0.00</h2>
+  </div>
+
+  <div class="card">
+    <h4>Total Commission</h4>
+    <h2 id="commission">GHS 0.00</h2>
+  </div>
+
+  <div class="card">
+    <h4>Total Sub-Agents</h4>
+    <h2 id="subagents">0</h2>
+  </div>
+</div>
+
+<!-- REFERRAL -->
+<div class="card">
+  <h4>Your Referral Link</h4>
+  <input id="refLink" readonly>
+  <small>Share this link to register sub-agents</small>
+</div>
+
+<!-- WITHDRAW -->
+<div class="card">
+  <h4>Request Withdrawal</h4>
+  <input id="amount" placeholder="Amount (GHS)">
+  <input id="momo" placeholder="MTN MoMo Number">
+  <button onclick="withdraw()">Withdraw</button>
+  <p id="withdrawMsg"></p>
+</div>
+
+<!-- SUB AGENTS -->
+<div class="card">
+  <h4>Your Sub-Agents</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Wallet</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="subTable"></tbody>
+  </table>
+</div>
+
+<!-- TRANSACTIONS -->
+<div class="card">
+  <h4>Recent Transactions</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Network</th>
+        <th>Volume</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="txTable"></tbody>
+  </table>
+</div>
+
+<script>
+/* Wallet */
+fetch("../../backend/wallet.php")
+.then(r=>r.json())
+.then(d=>{
+  wallet.innerText="GHS "+d.wallet;
+});
+
+/* Commission */
+fetch("../../backend/commission.php")
+.then(r=>r.json())
+.then(d=>{
+  commission.innerText="GHS "+d.total;
+});
+
+/* Referral link */
+fetch("../../backend/referral.php")
+.then(r=>r.text())
+.then(link=>{
+  refLink.value=link;
+});
+
+/* Sub-agents */
+fetch("../../backend/subagents.php")
+.then(r=>r.json())
+.then(rows=>{
+  subagents.innerText=rows.length;
+  let html="";
+  rows.forEach(s=>{
+    html+=`<tr>
+      <td>${s.email}</td>
+      <td>GHS ${s.wallet}</td>
+      <td>${s.approved==1?'Approved':'Pending'}</td>
+    </tr>`;
+  });
+  subTable.innerHTML=html;
+});
+
+/* Transactions */
+fetch("../../backend/transactions.php")
+.then(r=>r.json())
+.then(rows=>{
+  let html="";
+  rows.forEach(t=>{
+    html+=`<tr>
+      <td>${t.network}</td>
+      <td>${t.volume}GB</td>
+      <td>GHS ${t.amount}</td>
+      <td class="${t.status=='success'?'success':'error'}">${t.status}</td>
+      <td>${t.created_at}</td>
+    </tr>`;
+  });
+  txTable.innerHTML=html;
+});
+
+/* Withdraw */
+function withdraw(){
+  fetch("../../backend/withdraw.php",{
+    method:"POST",
+    body:new URLSearchParams({
+      amount:amount.value,
+      momo:momo.value
+    })
+  })
+  .then(r=>r.text())
+  .then(msg=>{
+    withdrawMsg.innerText=msg;
+    withdrawMsg.className = msg.includes("submitted")?"success":"error";
+  });
+}
+
+/* Logout */
+function logout(){
+  fetch("../../backend/logout.php")
+    .then(()=>location.href="../login.html");
+}
+</script>
+
+</body>
+</html>

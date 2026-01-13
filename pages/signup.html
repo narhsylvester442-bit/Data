@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.card{
+  background:#020617;
+  padding:25px;
+  width:100%;
+  max-width:400px;
+  border-radius:8px;
+}
+h2{text-align:center}
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:5px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  background:#22c55e;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  margin-top:10px;
+}
+.success{color:#22c55e;text-align:center}
+.error{color:#ef4444;text-align:center}
+.hidden{display:none}
+small{text-align:center;display:block;margin-top:10px}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Create Account</h2>
+
+  <!-- STEP 1 -->
+  <form id="step1">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="tel" id="phone" placeholder="Phone Number" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button>Send OTP</button>
+  </form>
+
+  <!-- STEP 2 -->
+  <form id="step2" class="hidden">
+    <input type="text" id="otp" placeholder="Enter OTP" required>
+    <button>Verify & Create Account</button>
+  </form>
+
+  <p id="msg"></p>
+
+  <small>
+    Already registered?
+    <a href="login.html" style="color:#22c55e">Login</a>
+  </small>
+</div>
+
+<script>
+const ref = new URLSearchParams(window.location.search).get("ref");
+
+/* STEP 1: SEND OTP */
+step1.onsubmit = e => {
+  e.preventDefault();
+
+  fetch("../backend/auth.php?action=send_otp",{
+    method:"POST",
+    body:new URLSearchParams({
+      email:email.value,
+      phone:phone.value,
+      password:password.value,
+      ref:ref
+    })
+  })
+  .then(r=>r.text())
+  .then(res=>{
+    if(res==="OTP_SENT"){
+      step1.classList.add("hidden");
+      step2.classList.remove("hidden");
+      msg.innerText="OTP sent to your phone";
+      msg.className="success";
+    }else{
+      msg.innerText=res;
+      msg.className="error";
+    }
+  });
+};
+
+/* STEP 2: VERIFY OTP */
+step2.onsubmit = e => {
+  e.preventDefault();
+
+  fetch("../backend/auth.php?action=verify_otp",{
+    method:"POST",
+    body:new URLSearchParams({
+      otp:otp.value
+    })
+  })
+  .then(r=>r.text())
+  .then(res=>{
+    msg.innerText=res;
+    msg.className = res.includes("successful") ? "success" : "error";
+  });
+};
+</script>
+
+</body>
+</html>

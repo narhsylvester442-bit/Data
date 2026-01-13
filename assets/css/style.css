@@ -1,0 +1,35 @@
+body {
+  background:#08377c;
+  color:#c9d1d9;
+  font-family:Arial;
+  padding:20px;
+}
+
+input, select, button {
+  padding:10px;
+  margin:5px 0;
+  background:#10ffff;
+  color:white;
+  border:1px solid #16f7ff;
+  border-radius:6px;
+}
+
+button {
+  background:#238636;
+  cursor:pointer;
+}
+
+button:hover { opacity:0.8; }
+
+a { color:#58a6ff; }
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:6px;
+  z-index:10000;
+}
+.toast.error{background:#ef4444}

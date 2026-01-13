@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Buy Data | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.card{
+  background:#020617;
+  padding:25px;
+  width:100%;
+  max-width:420px;
+  border-radius:8px;
+}
+h2{text-align:center;margin-bottom:15px}
+select,input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:5px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  background:#22c55e;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  margin-top:10px;
+}
+button:disabled{
+  opacity:.6;
+}
+.loader{
+  display:none;
+  text-align:center;
+  margin-top:10px;
+}
+.success{color:#22c55e;text-align:center}
+.error{color:#ef4444;text-align:center}
+footer{
+  text-align:center;
+  margin-top:10px;
+  font-size:13px;
+  opacity:.7;
+}
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:6px;
+  z-index:10000;
+}
+.toast.error{background:#ef4444}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Buy Data Bundle</h2>
+
+  <div id="globalLoader" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  color:#fff;
+">
+  Loading...
+</div>
+
+  <form id="buyForm">
+    <select id="network" required>
+      <option value="">Select Network</option>
+      <option value="MTN">MTN</option>
+      <option value="AT">AirtelTigo</option>
+      <option value="TEL">Telecel</option>
+      <option value="BIG">Big Data</option>
+    </select>
+
+    <select id="volume" required>
+      <option value="">Select Data Size</option>
+      <option value="1">1GB</option>
+      <option value="2">2GB</option>
+      <option value="5">5GB</option>
+      <option value="10">10GB</option>
+    </select>
+
+    <input type="tel" id="number" placeholder="Recipient Number" required>
+
+    <button>Buy Now</button>
+  </form>
+
+  <div class="loader" id="loader">Processing purchase...</div>
+  <p id="msg"></p>
+
+  <footer>
+    Powered by Best Data Offer Zone
+  </footer>
+</div>
+
+<script>
+buyForm.onsubmit = e => {
+  e.preventDefault();
+  msg.innerText="";
+  loader.style.display="block";
+
+  fetch("../../backend/buy.php",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      network:network.value,
+      volume:volume.value,
+      customer_number:number.value,
+      externalref:`api_${Date.now()}`
+    })
+  })
+  .then(async r=>{
+    let res;
+    try{
+      res = await r.json();
+    }catch(_){
+      const text = await r.text();
+      res = { status: 0, message: text || "Unknown error" };
+    }
+    return res;
+  })
+  .then(res=>{
+    loader.style.display="none";
+
+    if(res.status===1){
+      msg.innerText=`✅ ${res.message} • ID ${res.order_id}`;
+      msg.className="success";
+      buyForm.reset();
+    }else{
+      msg.innerText=`❌ ${res.message || "Failed"}`;
+      msg.className="error";
+    }
+  })
+  .catch(()=>{
+    loader.style.display="none";
+    msg.innerText="❌ Network error. Try again.";
+    msg.className="error";
+  });
+};
+</script>
+<script src="../assets/js/main.js"></script>
+
+</body>
+</html>

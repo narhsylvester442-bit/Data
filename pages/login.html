@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.card{
+  background:#020617;
+  padding:25px;
+  width:100%;
+  max-width:360px;
+  border-radius:8px;
+}
+h2{text-align:center}
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:5px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  background:#22c55e;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  margin-top:10px;
+}
+.error{
+  color:#ef4444;
+  margin-top:10px;
+  text-align:center;
+}
+small{
+  display:block;
+  text-align:center;
+  margin-top:10px;
+}
+a{color:#22c55e;text-decoration:none}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Login</h2>
+
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button>Login</button>
+  </form>
+
+  <p id="msg" class="error"></p>
+
+  <small>
+    Don’t have an account?
+    <a href="signup.html">Sign up</a>
+  </small>
+</div>
+
+<script>
+document.getElementById("loginForm").onsubmit = function(e){
+  e.preventDefault();
+
+  fetch("../backend/auth.php?action=login",{
+    method:"POST",
+    body:new URLSearchParams({
+      email:email.value,
+      password:password.value
+    })
+  })
+  .then(r=>r.text())
+  .then(res=>{
+    if(res==="admin"){
+      location.href="admin-dashboard.html";
+    }
+    else if(res==="agent"){
+      location.href="agent-dashboard.html";
+    }
+    else if(res==="subagent"){
+      location.href="subagent-dashboard.html";
+    }
+    else{
+      msg.innerText=res;
+    }
+  });
+};
+</script>
+
+</body>
+</html>

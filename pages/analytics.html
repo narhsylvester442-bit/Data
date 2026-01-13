@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Analytics | Best Data Offer Zone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  background:#0f172a;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+  margin:0;
+  padding:15px;
+}
+.card{
+  background:#020617;
+  padding:15px;
+  margin-bottom:15px;
+  border-radius:8px;
+}
+canvas{
+  max-height:300px;
+}
+h3{
+  margin-bottom:10px;
+}
+.toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#22c55e;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:6px;
+  z-index:10000;
+}
+.toast.error{background:#ef4444}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h3>Daily Sales</h3>
+  <canvas id="salesChart"></canvas>
+</div>
+
+<div class="card">
+  <h3>Revenue vs Profit</h3>
+  <canvas id="profitChart"></canvas>
+</div>
+
+<div id="globalLoader" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  color:#fff;
+">
+  Loading...
+</div>
+
+<script>
+/* DAILY SALES CHART */
+fetch("../../backend/analytics.php")
+.then(r=>r.json())
+.then(data=>{
+  new Chart(document.getElementById("salesChart"),{
+    type:"line",
+    data:{
+      labels:data.map(x=>x.date),
+      datasets:[{
+        label:"Sales Count",
+        data:data.map(x=>x.count),
+        tension:0.4
+      }]
+    }
+  });
+});
+
+/* PROFIT CHART */
+fetch("../../backend/admin-profit.php")
+.then(r=>r.json())
+.then(d=>{
+  new Chart(document.getElementById("profitChart"),{
+    type:"bar",
+    data:{
+      labels:["Revenue","Profit"],
+      datasets:[{
+        label:"GHS",
+        data:[d.revenue, d.profit]
+      }]
+    }
+  });
+});
+</script>
+
+<h3 id="totalTx"></h3>
+<h3 id="totalRevenue"></h3>
+<h3 id="totalProfit"></h3>
+
+<input type="date" id="fromDate">
+<input type="date" id="toDate">
+<button onclick="applyDateFilter()">Apply</button>
+
+<canvas id="networkChart"></canvas>
+<canvas id="dailyChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../assets/js/analytics.js"></script>
+<script src="../assets/js/main.js"></script>
+
+</body>
+</html>
